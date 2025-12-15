@@ -1,6 +1,7 @@
 import { authResolvers } from "./auth";
 import { postResolvers } from "./post";
 import { likeResolvers } from "./like";
+import { subscriptionResolvers } from "./subscription";
 
 export const resolvers = {
   Query: {
@@ -12,6 +13,7 @@ export const resolvers = {
     ...postResolvers.Mutation,
     ...likeResolvers.Mutation,
   },
+  Subscription: subscriptionResolvers.Subscription,
   Post: postResolvers.Post,
   User: postResolvers.User,
 };

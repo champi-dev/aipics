@@ -65,4 +65,14 @@ export const typeDefs = `#graphql
     email: String!
     password: String!
   }
+
+  type Subscription {
+    postCreated: Post!
+    postLikeUpdated(postId: ID): PostLikeUpdate!
+  }
+
+  type PostLikeUpdate {
+    postId: ID!
+    likesCount: Int!
+  }
 `;

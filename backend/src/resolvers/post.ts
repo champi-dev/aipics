@@ -1,6 +1,7 @@
 import { LeonardoService } from "../services/leonardo";
 import { validatePrompt } from "../utils/validation";
 import { Context } from "../types";
+import { pubsub, EVENTS } from "../pubsub";
 
 const leonardo = new LeonardoService();
 
@@ -136,13 +137,17 @@ export const postResolvers = {
 
           const imageUrl = await leonardo.pollForCompletion(generationId);
 
-          await prisma.post.update({
+          const completedPost = await prisma.post.update({
             where: { id: post.id },
             data: {
               imageUrl,
               status: "completed",
             },
+            include: { user: true },
           });
+
+          // Publish event for real-time updates
+          pubsub.publish(EVENTS.POST_CREATED, { postCreated: completedPost });
         } catch (error) {
           await prisma.post.update({
             where: { id: post.id },

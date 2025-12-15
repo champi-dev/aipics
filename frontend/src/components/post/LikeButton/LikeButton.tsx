@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { useMutation } from "@apollo/client";
+import { useState, useEffect } from "react";
+import { useMutation, useSubscription } from "@apollo/client";
 import { LIKE_POST, UNLIKE_POST } from "../../../graphql/mutations";
+import { POST_LIKE_UPDATED_SUBSCRIPTION } from "../../../graphql/subscriptions";
 import { useAuth } from "../../../hooks/useAuth";
 import styles from "./LikeButton.module.css";
 
@@ -11,14 +12,40 @@ interface LikeButtonProps {
   onAuthRequired: () => void;
 }
 
+interface LikeUpdateData {
+  postLikeUpdated: {
+    postId: string;
+    likesCount: number;
+  };
+}
+
 export function LikeButton({ postId, likesCount, isLiked, onAuthRequired }: LikeButtonProps) {
   const { isAuthenticated } = useAuth();
   const [optimisticLiked, setOptimisticLiked] = useState(isLiked);
-  const [optimisticCount, setOptimisticCount] = useState(likesCount);
+  const [displayCount, setDisplayCount] = useState(likesCount);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [likePost] = useMutation(LIKE_POST);
   const [unlikePost] = useMutation(UNLIKE_POST);
+
+  // Subscribe to like updates for this post
+  const { data: subscriptionData } = useSubscription<LikeUpdateData>(
+    POST_LIKE_UPDATED_SUBSCRIPTION,
+    { variables: { postId } }
+  );
+
+  // Update display count when subscription data changes
+  useEffect(() => {
+    if (subscriptionData?.postLikeUpdated?.postId === postId) {
+      setDisplayCount(subscriptionData.postLikeUpdated.likesCount);
+    }
+  }, [subscriptionData, postId]);
+
+  // Sync with props when they change (e.g., initial load)
+  useEffect(() => {
+    setDisplayCount(likesCount);
+    setOptimisticLiked(isLiked);
+  }, [likesCount, isLiked]);
 
   const handleClick = async () => {
     if (!isAuthenticated) {
@@ -26,25 +53,28 @@ export function LikeButton({ postId, likesCount, isLiked, onAuthRequired }: Like
       return;
     }
 
-    // Optimistic update
-    setOptimisticLiked(!optimisticLiked);
-    setOptimisticCount(optimisticLiked ? optimisticCount - 1 : optimisticCount + 1);
+    const wasLiked = optimisticLiked;
+    const prevCount = displayCount;
 
-    if (!optimisticLiked) {
+    // Optimistic update
+    setOptimisticLiked(!wasLiked);
+    setDisplayCount(wasLiked ? prevCount - 1 : prevCount + 1);
+
+    if (!wasLiked) {
       setIsAnimating(true);
       setTimeout(() => setIsAnimating(false), 300);
     }
 
     try {
-      if (optimisticLiked) {
+      if (wasLiked) {
         await unlikePost({ variables: { postId } });
       } else {
         await likePost({ variables: { postId } });
       }
     } catch {
       // Revert on error
-      setOptimisticLiked(optimisticLiked);
-      setOptimisticCount(likesCount);
+      setOptimisticLiked(wasLiked);
+      setDisplayCount(prevCount);
     }
   };
 
@@ -63,7 +93,7 @@ export function LikeButton({ postId, likesCount, isLiked, onAuthRequired }: Like
       >
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
-      <span className={styles.count}>{optimisticCount.toLocaleString()}</span>
+      <span className={styles.count}>{displayCount.toLocaleString()}</span>
     </button>
   );
 }

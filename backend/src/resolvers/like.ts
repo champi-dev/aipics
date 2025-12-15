@@ -1,4 +1,5 @@
 import { Context } from "../types";
+import { pubsub, EVENTS } from "../pubsub";
 
 export const likeResolvers = {
   Mutation: {
@@ -19,11 +20,18 @@ export const likeResolvers = {
         });
 
         // Increment likes count
-        return prisma.post.update({
+        const updatedPost = await prisma.post.update({
           where: { id: postId },
           data: { likesCount: { increment: 1 } },
           include: { user: true },
         });
+
+        // Publish event for real-time updates
+        pubsub.publish(EVENTS.POST_LIKE_UPDATED, {
+          postLikeUpdated: { postId, likesCount: updatedPost.likesCount },
+        });
+
+        return updatedPost;
       } catch (error) {
         // Already liked, return current state
         return prisma.post.findUnique({
@@ -51,11 +59,18 @@ export const likeResolvers = {
           where: { id: like.id },
         });
 
-        return prisma.post.update({
+        const updatedPost = await prisma.post.update({
           where: { id: postId },
           data: { likesCount: { decrement: 1 } },
           include: { user: true },
         });
+
+        // Publish event for real-time updates
+        pubsub.publish(EVENTS.POST_LIKE_UPDATED, {
+          postLikeUpdated: { postId, likesCount: updatedPost.likesCount },
+        });
+
+        return updatedPost;
       }
 
       return prisma.post.findUnique({
