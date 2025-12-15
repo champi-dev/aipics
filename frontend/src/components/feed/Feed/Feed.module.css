@@ -1,0 +1,87 @@
+.feed {
+  width: 100%;
+}
+
+.generatingWrapper {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--spacing-6);
+  margin-bottom: var(--spacing-6);
+}
+
+@media (min-width: 640px) {
+  .generatingWrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .generatingWrapper {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .generatingWrapper {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-12);
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-12);
+  text-align: center;
+}
+
+.error p {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+}
+
+.errorMessage {
+  color: var(--color-text-secondary) !important;
+  font-size: var(--font-size-base) !important;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-12);
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.emptyText {
+  color: var(--color-text-secondary);
+}
+
+.loadMore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-8);
+}
+
+.endMessage {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}

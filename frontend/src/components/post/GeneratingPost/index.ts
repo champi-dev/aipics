@@ -1,0 +1,1 @@
+export { GeneratingPost } from "./GeneratingPost";

@@ -1,0 +1,47 @@
+.button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease-out;
+}
+
+.button:hover {
+  color: var(--color-like);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.liked {
+  color: var(--color-like);
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+.animating .icon {
+  animation: likeHeart 0.3s ease-out;
+}
+
+@keyframes likeHeart {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.2);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.count {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}

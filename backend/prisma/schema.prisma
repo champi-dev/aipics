@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique @db.VarChar(30)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  avatarUrl    String?  @map("avatar_url") @db.VarChar(500)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  posts        Post[]
+  likes        Like[]
+
+  @@map("users")
+}
+
+model Post {
+  id                   String   @id @default(uuid())
+  userId               String   @map("user_id")
+  prompt               String
+  imageUrl             String   @map("image_url") @db.VarChar(500)
+  leonardoGenerationId String?  @map("leonardo_generation_id") @db.VarChar(100)
+  status               String   @default("completed") @db.VarChar(20)
+  likesCount           Int      @default(0) @map("likes_count")
+  createdAt            DateTime @default(now()) @map("created_at")
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes                Like[]
+
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+  @@map("posts")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  postId    String   @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([postId])
+  @@index([userId])
+  @@map("likes")
+}
